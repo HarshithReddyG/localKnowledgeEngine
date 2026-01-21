@@ -1,0 +1,7 @@
+mage-ai
+duckdb==1.1.3
+sentence-transformers
+pandas
+PyPDF2
+streamlit
+dbt-duckdb

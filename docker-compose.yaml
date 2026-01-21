@@ -1,0 +1,16 @@
+services:
+  magic:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mage-ai-m1-rag
+    container_name: local_knowledge_magic
+    command: mage start mage-ai
+    ports:
+      - "6789:6789"
+    env_file:
+      - .env
+    volumes:
+      - .:/home/src
+    environment:
+      USER_CODE_PATH: /home/src/mage-ai
