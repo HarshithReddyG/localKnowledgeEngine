@@ -1,0 +1,57 @@
+import duckdb
+from sentence_transformers import SentenceTransformer
+import requests
+import json
+
+@custom
+def rag_search(user_query, *args, **kwargs):
+    # 1. Setup paths and models
+    db_path = '/home/src/data/processed/knowledge_base.duckdb'
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    
+    # 2. Convert User Query into a Vector (The "Math" Search)
+    query_vector = model.encode(user_query).tolist()
+    
+    # 3. Connect to DuckDB and find the "Nearest Neighbors"
+    # We use Cosine Similarity (the 2026 standard for RAG)
+    conn = duckdb.connect(db_path)
+
+    # SQL Logic: Calculate the distance between our question vector and all stored vectors
+    search_query = f"""
+        SELECT content, document_id, 
+               list_cosine_similarity(vector, {query_vector}::FLOAT[]) as similarity
+        FROM vector_store
+        ORDER BY similarity DESC
+        LIMIT 3
+    """
+    
+    results = conn.execute(search_query).df()
+    conn.close()
+    
+    # 4. Context Preparation
+    context = "\n".join(results['content'].tolist())
+    print(f"🔍 Found {len(results)} relevant chunks in the database.")
+    
+    # 5. Send to Ollama (The "RAG" step)
+    # Note: 'host.docker.internal' allows the container to talk to your Mac's Ollama
+    ollama_url = "http://host.docker.internal"
+
+    prompt = f"""
+    You are a professional research assistant. Use the following pieces of retrieved context 
+    to answer the user's question. If you don't know the answer, say you don't know.
+    
+    Context: {context}
+    Question: {user_query}
+    Answer:
+    """
+    
+    response = requests.post(ollama_url, json={
+        "model": "llama3.2:3b",
+        "prompt": prompt,
+        "stream": False
+    })
+    
+    return {
+        "answer": response.json()['response'],
+        "sources": results['document_id'].unique().tolist()
+    }

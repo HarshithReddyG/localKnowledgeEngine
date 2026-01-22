@@ -1,1 +1,2 @@
 {"operation": "create", "resource": {"type": "pipeline", "uuid": "knowledge_base_ingestion"}, "timestamp": 1769112628, "user": 1}
+{"operation": "create", "resource": {"type": "pipeline", "uuid": "semantic_search_and_rag"}, "timestamp": 1769121212, "user": 1}

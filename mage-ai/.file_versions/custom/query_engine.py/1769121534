@@ -1,0 +1,19 @@
+import duckdb
+from sentence_transformers import SentenceTransformer
+import requests
+import json
+
+@custom
+def rag_search(user_query, *args, **kwargs):
+    # 1. Setup paths and models
+    db_path = '/home/src/data/processed/knowledge_base.duckdb'
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    
+    # 2. Convert User Query into a Vector (The "Math" Search)
+    query_vector = model.encode(user_query).tolist()
+    
+    # 3. Connect to DuckDB and find the "Nearest Neighbors"
+    # We use Cosine Similarity (the 2026 standard for RAG)
+    conn = duckdb.connect(db_path)
+
+    
