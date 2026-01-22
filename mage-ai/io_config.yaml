@@ -1,0 +1,5 @@
+version: 0.1.1
+dev:
+  # MUST use these exact uppercase keys for Mage to recognize them
+  DUCKDB_DATABASE: "/home/src/data/processed/knowledge_base.duckdb"
+  DUCKDB_SCHEMA: "main"

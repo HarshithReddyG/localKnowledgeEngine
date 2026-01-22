@@ -1,0 +1,32 @@
+from sentence_transformers import SentenceTransformer
+import pandas as pd
+
+@transformer
+def transform(data, *args, **kwargs):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    chunked_data = []
+    
+    # PM Note: data is now a list of dicts from the block above
+    for doc in data:
+        # Pull text and filename correctly
+        text = doc.get('text', '')
+        source_name = doc.get('filename', 'unknown_source')
+
+        # Skip if text is empty
+        if not text.strip():
+            continue
+
+        # Chunking logic
+        chunks = [text[i:i+500] for i in range(0, len(text), 500)]
+        
+        for i, chunk in enumerate(chunks):
+            embedding = model.encode(chunk).tolist()
+            
+            chunked_data.append({
+                'document_id': source_name,
+                'chunk_id': f"{source_name}_{i}",
+                'content': chunk,
+                'vector': embedding
+            })
+    
+    return pd.DataFrame(chunked_data)

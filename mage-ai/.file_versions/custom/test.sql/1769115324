@@ -1,0 +1,4 @@
+-- Docs: https://docs.mage.ai/guides/sql-blocks
+SELECT document_id, count(*) as total_chunks
+FROM vector_store
+GROUP BY document_id;

@@ -1,0 +1,2 @@
+select document_
+from vector_store

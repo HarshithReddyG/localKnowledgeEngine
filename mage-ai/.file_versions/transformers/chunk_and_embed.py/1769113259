@@ -1,0 +1,31 @@
+from sentence_transformers import SentenceTransformer
+import pandas as pd
+
+@transformer
+def transform(data, *args, **kwargs):
+    # 1. Initialize the model
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    
+    chunked_data = []
+    
+    # Use to_dict('records') to turn rows into a list of dictionaries
+    for doc in data.to_dict('records'):
+        text = doc.get('text', '') # Safe access
+        filename = doc.get('filename', 'unknown')
+        
+        # 2. Strategy: Split text into 500-character chunks
+        chunks = [text[i:i+500] for i in range(0, len(text), 500)]
+        
+        # If the text was empty, this loop won't run
+        for i, chunk in enumerate(chunks):
+            # 3. Create the Embedding
+            embedding = model.encode(chunk).tolist()
+            
+            chunked_data.append({
+                'document_id': filename,
+                'chunk_id': f"{filename}_{i}",
+                'content': chunk,
+                'vector': embedding
+            })
+    
+    return pd.DataFrame(chunked_data)

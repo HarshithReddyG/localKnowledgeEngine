@@ -1,0 +1,3 @@
+SELECT document_id, count(*) as total_chunks
+FROM vector_store
+GROUP BY document_id
